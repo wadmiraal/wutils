@@ -1,35 +1,43 @@
-const { assert, define, test } = require("../../src/wunit/wunit");
+const {
+  assertEqual,
+  assertNotEqual,
+  define,
+  test,
+} = require("../../src/wunit/wunit");
 
 define("wunit testing library", () => {
   test("simple assertions work correctly", () => {
-    assert(true).equals(true);
-    assert("foo").equals("foo");
-    assert(false).doesNot.equal(true);
-    assert("foo").doesNot.equal("bar");
-    assert(1).equals(1);
-    assert(1).doesNot.equal(2);
+    assertEqual(true, true);
+    assertEqual("foo", "foo");
+    assertNotEqual(false, true);
+    assertNotEqual("foo", "bar");
+    assertEqual(1, 1);
+    assertNotEqual(1, 2);
   });
 
   test("assertions with functions work correctly", () => {
-    assert(assert).equals(assert);
-    assert(assert).doesNot.equal(test);
+    assertEqual(define, define);
+    assertNotEqual(define, test);
   });
 
   test("assertions with arrays work correctly", () => {
-    assert(["foo", 1]).equals(["foo", 1]);
-    assert([1, "foo"]).equals(["foo", 1]); // We don't care about the order.
-    assert(["foo", "bar"]).doesNot.equal(["foo", 1]);
+    assertEqual(["foo", 1], ["foo", 1]);
+    assertEqual([1, "foo"], ["foo", 1]); // We don't care about the order.
+    assertNotEqual(["foo", "bar"], ["foo", 1]);
   });
 
   test("assertions with objects work correctly", () => {
-    assert({ foo: "bar" }).equals({ foo: "bar" });
-    assert({ foo: "baz" }).doesNot.equal({ foo: "bar" });
+    assertEqual({ foo: "bar" }, { foo: "bar" });
+    assertNotEqual({ foo: "baz" }, { foo: "bar" });
   });
 
   test("assertions with nested structures work correctly", () => {
-    assert({ foo: ["bar", { baz: 1 }] }).equals({ foo: ["bar", { baz: 1 }] });
-    assert({ foo: ["bar", { baz: 1 }] }).doesNot.equal({
-      foo: ["bar", { baz: 2 }],
-    });
+    assertEqual({ foo: ["bar", { baz: 1 }] }, { foo: ["bar", { baz: 1 }] });
+    assertNotEqual(
+      { foo: ["bar", { baz: 1 }] },
+      {
+        foo: ["bar", { baz: 2 }],
+      }
+    );
   });
 });

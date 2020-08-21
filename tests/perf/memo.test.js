@@ -1,15 +1,15 @@
-const { assert, define, it } = require("../../src/wunit/wunit");
+const { assertEqual, define, test } = require("../../src/wunit/wunit");
 const memo = require("../../src/perf/memo");
 
 define("memoization utility", () => {
-  it("correctly calls the underlying function", () => {
+  test("correctly calls the underlying function", () => {
     const fn = memo((a, b) => {
       return a + b;
     });
-    assert(fn(4, 5)).equals(9);
+    assertEqual(fn(4, 5), 9);
   });
 
-  it("correctly uses the cache, even if the function isn't pure", () => {
+  test("correctly uses the cache, even if the function isn't pure", () => {
     let n = 0;
     const fn = (a) => {
       n++;
@@ -17,14 +17,14 @@ define("memoization utility", () => {
     };
     const memoFn = memo(fn);
 
-    assert(memoFn(1)).equals(2);
-    assert(memoFn(1)).equals(2);
+    assertEqual(memoFn(1), 2);
+    assertEqual(memoFn(1), 2);
 
-    assert(fn(1)).equals(3);
-    assert(fn(1)).equals(4);
+    assertEqual(fn(1), 3);
+    assertEqual(fn(1), 4);
   });
 
-  it("can also use objects", () => {
+  test("can also use objects", () => {
     let n = 0;
     const memoFn = memo(({ count }) => {
       n++;
@@ -32,9 +32,9 @@ define("memoization utility", () => {
     });
     const a = { count: 1 };
 
-    assert(memoFn(a)).equals(2);
-    assert(memoFn(a)).equals(2);
-    assert(memoFn({ count: 1 })).equals(2);
-    assert(memoFn({ count: 2 })).equals(4);
+    assertEqual(memoFn(a), 2);
+    assertEqual(memoFn(a), 2);
+    assertEqual(memoFn({ count: 1 }), 2);
+    assertEqual(memoFn({ count: 2 }), 4);
   });
 });

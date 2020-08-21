@@ -5,7 +5,7 @@
  * printed text.
  *
  * @param {String} modifier
- * @param  {...String} text
+ * @param {...String} text
  */
 function print(modifier, ...text) {
   console.log(`${modifier}${text.join(" ")}\x1b[0m`);
@@ -31,10 +31,15 @@ function warn(...text) {
   print("\x1b[33m", ...text);
 }
 
+function nl() {
+  console.log();
+}
+
 module.exports = {
   echo,
   error,
   info,
+  nl,
   success,
   warn,
 };

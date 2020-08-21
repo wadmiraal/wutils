@@ -1,4 +1,6 @@
-const { echo, success, error } = require("../console/console");
+const { echo, success, error, nl } = require("../console/console");
+
+const INDENT = "  ";
 
 /**
  * Helper function for printing out results.
@@ -16,7 +18,7 @@ function stringify(o) {
     case "boolean":
     case "function":
       return o.toString();
-    case "object":
+    default:
       return JSON.stringify(o);
   }
 }
@@ -33,7 +35,7 @@ function stringify(o) {
  * @param {*} expected
  * @returns {boolean}
  */
-function doEquals(value, expected) {
+function areEqual(value, expected) {
   switch (typeof value) {
     case "string":
     case "number":
@@ -50,7 +52,7 @@ function doEquals(value, expected) {
           return false;
         } else {
           for (const item of value) {
-            if (!expected.some((e) => doEquals(item, e))) {
+            if (!expected.some((e) => areEqual(item, e))) {
               return false;
             }
           }
@@ -65,7 +67,7 @@ function doEquals(value, expected) {
           return false;
         } else {
           for (const property of Object.getOwnPropertyNames(value)) {
-            if (!doEquals(value[property], expected[property])) {
+            if (!areEqual(value[property], expected[property])) {
               return false;
             }
           }
@@ -82,78 +84,75 @@ function doEquals(value, expected) {
 }
 
 /**
- * Assertion helper class.
+ * Equality assertion.
  *
- * This utility class is only for internal use. It helps the chaining of
- * assertions, which make tests more readable.
+ * This supports arrays and objects, and will perform deep, recursive equality
+ * checks. Functions are compared using Object.is().
  *
- * E.g.:
- *   assert(true).equals(true);
+ * @throws Error
+ *   Will throw an error if the 2 values don't match.
+ * @param {*} value
+ * @param {*} expected
  */
-class Assertion {
-  #value;
-
-  constructor(value) {
-    this.#value = value;
-  }
-
-  get doesNot() {
-    return new NegatedAssertion(this.#value);
-  }
-
-  equals(expected) {
-    if (!doEquals(this.#value, expected)) {
-      throw new Error(
-        `"${stringify(this.#value)}" is not equal to "${stringify(expected)}"`
-      );
-    }
+function assertEqual(value, expected) {
+  if (!areEqual(value, expected)) {
+    throw new Error(
+      `"${stringify(value)}" is not equal to "${stringify(expected)}"`
+    );
   }
 }
 
 /**
- * Similar to the Assertion class, but negates the check.
+ * Non-equality assertion.
  *
- * This class doesn't have a "negation" getter, and can only be used from the
- * Assertion class's "doesNot" getter method.
+ * This supports arrays and objects, and will perform deep, recursive equality
+ * checks. Functions are compared using Object.is().
  *
- * E.g.:
- *   assert(true).doesNot.equal(false);
+ * @throws Error
+ *   Will throw an error if the 2 values match.
+ * @param {*} value
+ * @param {*} expected
  */
-class NegatedAssertion {
-  #value;
-
-  constructor(value) {
-    this.#value = value;
-  }
-
-  equal(expected) {
-    if (doEquals(this.#value, expected)) {
-      throw new Error(
-        `"${stringify(this.#value)}" is equal to "${stringify(
-          expected
-        )}", but it shouldn't be`
-      );
-    }
+function assertNotEqual(value, expected) {
+  if (areEqual(value, expected)) {
+    throw new Error(
+      `"${stringify(value)}" is equal to "${stringify(
+        expected
+      )}", but it shouldn't be`
+    );
   }
 }
 
-const INDENT = "  ";
 /**
- * Runs the actual tests.
+ * Starts a new test suite.
  *
- * For internal use. Supports "it" and "test" verbs, which slightly alter the
- * console output.
- *
- * @param {String} verb
  * @param {String} name
  * @param {Function} cb
  */
-function doTest(verb, name, cb) {
-  if (verb === "it") {
-    echo(INDENT, `It ${name}`);
-  } else {
-    echo(INDENT, `Test: "${name}"`);
+function define(name, cb) {
+  echo(`Start running suite: "${name}"`);
+
+  try {
+    cb();
+  } catch (e) {
+    error(`✗ Suite "${name}" failed with failing tests.`);
+    nl();
+    process.exitCode = 1;
+    return;
   }
+
+  success(`✓ Suite "${name}" passed!`);
+  nl();
+}
+
+/**
+ * Groups related tests together.
+ *
+ * @param {String} name
+ * @param {Function} cb
+ */
+function test(name, cb) {
+  echo(INDENT, `Test: "${name}"`);
 
   const failures = [];
   try {
@@ -172,67 +171,9 @@ function doTest(verb, name, cb) {
   }
 }
 
-/**
- * Starts an assertion of a value.
- *
- * This supports arrays and objects, and will perform deep, recursive equality
- * checks. Functions are compared using Object.is().
- *
- * E.g.:
- *   assert(true).equals(true);
- *   assert(true).doesNot.equal(false);
- *
- * @param {*} value
- * @returns {Assertion} An assertion object
- */
-function assert(value) {
-  return new Assertion(value);
-}
-
-/**
- * Starts a new test suite.
- *
- * @param {String} name
- * @param {Function} cb
- */
-function define(name, cb) {
-  echo(`Start running suite: "${name}"`);
-
-  try {
-    cb();
-  } catch (e) {
-    error(`✗ Suite "${name}" failed with failing tests.`);
-    echo(""); // new line;
-    process.exitCode = 1;
-    return;
-  }
-
-  success(`✓ Suite "${name}" passed!`);
-  echo(""); // new line;
-}
-
-/**
- * Groups related tests together.
- *
- * @param {String} name
- * @param {Function} cb
- */
-function test(name, cb) {
-  doTest("test", name, cb);
-}
-
-/**
- * Alias for test().
- *
- * @see test()
- */
-function it(name, cb) {
-  doTest("it", name, cb);
-}
-
 module.exports = {
-  assert,
+  assertEqual,
+  assertNotEqual,
   define,
-  it,
   test,
 };
