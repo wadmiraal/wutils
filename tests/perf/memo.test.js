@@ -1,5 +1,5 @@
 const { assert, define, it } = require("../../src/wunit/wunit");
-const { memo } = require("../../src/perf/memo");
+const memo = require("../../src/perf/memo");
 
 define("memoization utility", () => {
   it("correctly calls the underlying function", () => {
