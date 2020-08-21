@@ -1,5 +1,14 @@
-const { echo, success, error, info } = require("../console/console");
+const { echo, success, error } = require("../console/console");
 
+/**
+ * Helper function for printing out results.
+ *
+ * This will stringify the passed object, so it's more readable on the console.
+ * For internal use only.
+ *
+ * @param {*} o
+ * @returns {String}
+ */
 function stringify(o) {
   switch (typeof o) {
     case "string":
