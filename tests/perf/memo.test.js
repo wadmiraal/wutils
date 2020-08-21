@@ -34,6 +34,7 @@ define("memoization utility", () => {
 
     assert(memoFn(a)).equals(2);
     assert(memoFn(a)).equals(2);
-    assert(memoFn({ count: 1 })).equals(3); // Will fail the Object.is() check.
+    assert(memoFn({ count: 1 })).equals(2);
+    assert(memoFn({ count: 2 })).equals(4);
   });
 });
