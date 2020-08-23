@@ -1,25 +1,41 @@
-const { echo, success, error, nl } = require("../console/console");
+/**
+ * Simple unit testing library.
+ *
+ * Simple library for writing unit tests. Doesn't require any runner, as long
+ * as define() is used. Simply execute the test file using Node, and define()
+ * will do the rest.
+ *
+ * Design principles are simple:
+ * - Keep it short and easy to use.
+ * - Keep it as pure as possible: only define() is "impure". The assertions and
+ *   test() are pure, and simply return information based on their parameters.
+ * - No external libraries necessary.
+ * - No specific runner required.
+ *
+ * Wunit is tested using Wunit, of course.
+ *
+ * @module jsutils/wunit/wunit
+ */
+
+const { echo, success, error, nl } = require("../wcli/output");
 
 const INDENT = "  ";
 
 /**
  * Helper function for printing out results.
  *
- * This will stringify the passed object, so it's more readable on the console.
- * For internal use only.
+ * This will stringify the passed object, so it's more readable.
+ *
+ * This is internal to the module, and not exported.
  *
  * @param {*} o
- * @returns {String}
+ * @returns {string}
  */
 function stringify(o) {
-  switch (typeof o) {
-    case "string":
-    case "number":
-    case "boolean":
-    case "function":
-      return o.toString();
-    default:
-      return JSON.stringify(o);
+  if (typeof o === "function") {
+    return "[Function]";
+  } else {
+    return JSON.stringify(o);
   }
 }
 
@@ -89,17 +105,20 @@ function areEqual(value, expected) {
  * This supports arrays and objects, and will perform deep, recursive equality
  * checks. Functions are compared using Object.is().
  *
- * @throws Error
- *   Will throw an error if the 2 values don't match.
  * @param {*} value
  * @param {*} expected
+ * @returns {Object} Returns an object with the following keys:
+ *   - {boolean} "ok": whether the assertion was correct.
+ *   - {string} "message": the result in human-readable form.
  */
 function assertEqual(value, expected) {
-  if (!areEqual(value, expected)) {
-    throw new Error(
-      `"${stringify(value)}" is not equal to "${stringify(expected)}"`
-    );
-  }
+  const ok = areEqual(value, expected);
+  return {
+    ok,
+    message: ok
+      ? `${stringify(value)} is equal to ${stringify(expected)}`
+      : `${stringify(value)} is not equal to ${stringify(expected)}`,
+  };
 }
 
 /**
@@ -108,67 +127,86 @@ function assertEqual(value, expected) {
  * This supports arrays and objects, and will perform deep, recursive equality
  * checks. Functions are compared using Object.is().
  *
- * @throws Error
- *   Will throw an error if the 2 values match.
  * @param {*} value
  * @param {*} expected
+ * @returns {Object} Returns an object with the following keys:
+ *   - {boolean} "ok": whether the assertion was correct.
+ *   - {string} "message": the result in human-readable form.
  */
 function assertNotEqual(value, expected) {
-  if (areEqual(value, expected)) {
-    throw new Error(
-      `"${stringify(value)}" is equal to "${stringify(
-        expected
-      )}", but it shouldn't be`
-    );
-  }
+  const ok = !areEqual(value, expected);
+  return {
+    ok,
+    message: ok
+      ? `${stringify(value)} is not equal to ${stringify(expected)}`
+      : `${stringify(value)} is equal to ${stringify(
+          expected
+        )}, but it shouldn't be`,
+  };
+}
+
+/**
+ * Groups related assertions together.
+ *
+ * The callback provided must provide at least 1 assertion, otherwise it will
+ * be treated as a failing test.
+ *
+ * @param {string} name
+ * @param {Function} cb
+ * @returns {Object} Returns an object with the following keys:
+ *   - {string} "name": the same as the name parameter
+ *   - {Array} "failures": an array of error messages, if any
+ *   - {number} "total": the total number of assertions run
+ */
+function test(name, cb) {
+  const results = cb() || [];
+  return {
+    name,
+    failures:
+      results.length === 0
+        ? ["Test did not contain any assertions."]
+        : results.filter((r) => !r.ok).map((r) => r.message),
+    total: results.length,
+  };
 }
 
 /**
  * Starts a new test suite.
  *
- * @param {String} name
+ * @param {string} name
  * @param {Function} cb
  */
 function define(name, cb) {
+  const tests = cb() || [];
+  const hasFailures = tests.some((t) => t.failures.length > 0);
+
+  // Report.
   echo(`Start running suite: "${name}"`);
+  tests.forEach((t) => {
+    echo(INDENT, `Test: "${t.name}"`);
+    if (t.failures.length) {
+      error(
+        INDENT,
+        `✗ Test "${t.name}" failed with ${t.failures.length} error(s):`
+      );
+      t.failures.forEach((failure) => {
+        error(INDENT, INDENT, `- ${failure}`);
+      });
+    }
+    echo(
+      INDENT,
+      INDENT,
+      `${Math.max(0, t.total - t.failures.length)} out of ${t.total} passed`
+    );
+  });
 
-  try {
-    cb();
-  } catch (e) {
+  if (hasFailures) {
     error(`✗ Suite "${name}" failed with failing tests.`);
-    nl();
     process.exitCode = 1;
-    return;
+  } else {
+    success(`✓ Suite "${name}" passed!`);
   }
-
-  success(`✓ Suite "${name}" passed!`);
   nl();
-}
-
-/**
- * Groups related tests together.
- *
- * @param {String} name
- * @param {Function} cb
- */
-function test(name, cb) {
-  echo(INDENT, `Test: "${name}"`);
-
-  const failures = [];
-  try {
-    cb();
-  } catch (e) {
-    failures.push(e.message);
-  }
-
-  if (failures.length) {
-    error(INDENT, `✗ Test "${name}" failed with ${failures.length} errors:`);
-    failures.forEach((failure) => {
-      error(INDENT, INDENT, `- ${failure}`);
-    });
-
-    throw new Error(`Test "${name}" failed with ${failures.length} errors`);
-  }
 }
 
 module.exports = {

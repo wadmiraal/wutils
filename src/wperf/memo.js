@@ -1,4 +1,12 @@
 /**
+ * Memoization.
+ *
+ * Simple helper for memoizing functions.
+ *
+ * @module jsutils/wperf/memo
+ */
+
+/**
  * Applies memoization to the passed function.
  *
  * Returns a new function, which behaves exactly as the passed one. All

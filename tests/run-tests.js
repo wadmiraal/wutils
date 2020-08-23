@@ -1,2 +1,2 @@
 require("./wunit/wunit.test");
-require("./perf/memo.test");
+require("./wperf/memo.test");
