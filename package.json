@@ -4,6 +4,7 @@
   "description": "Some JS utilities, no dependencies",
   "main": "index.js",
   "scripts": {
+    "bench": "node tests/run-benchmark.js",
     "test": "node tests/run-tests.js"
   },
   "repository": {

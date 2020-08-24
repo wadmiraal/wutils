@@ -3,6 +3,18 @@
  *
  * Simple helper for memoizing functions.
  *
+ * This uses JSON.stringify() for generating cache keys if:
+ * - The function receives more than 1 argument.
+ * - If the function receives only 1 argument, but this isn't a primitive
+ *   value.
+ *
+ * It's important to note that JSON.stringify() is expensive. This will have a
+ * significant impact on performance, and may render the memoization itself
+ * useless. You will see the best performance gains if:
+ * - You memoize functions that receive only 1 primitive argument (string,
+ *   number, boolean).
+ * - Your function is doing something very, very expensive and/or slow.
+ *
  * @module jsutils/wperf/memo
  */
 
