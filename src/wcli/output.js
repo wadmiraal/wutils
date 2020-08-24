@@ -22,7 +22,7 @@ function print(modifier, ...text) {
 
 module.exports = {
   echo(...text) {
-    print(...text);
+    print("", ...text);
   },
   error(...text) {
     print("\x1b[31m", ...text);
