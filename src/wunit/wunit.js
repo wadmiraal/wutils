@@ -35,6 +35,8 @@ function stringify(o) {
   if (typeof o === "function") {
     return "[Function]";
   } else {
+    // We don't care about types that don't translate well to JSON. Symbols & co
+    // are not supported by the equality checks anyway.
     return JSON.stringify(o);
   }
 }
@@ -95,7 +97,7 @@ function areEqual(value, expected) {
       }
   }
 
-  // Unsupported comparison.
+  // Unsupported comparison. We don't care about Symbols or other stuff.
   return false;
 }
 
@@ -104,6 +106,8 @@ function areEqual(value, expected) {
  *
  * This supports arrays and objects, and will perform deep, recursive equality
  * checks. Functions are compared using Object.is().
+ *
+ * @see {@link areEqual}
  *
  * @param {*} value
  * @param {*} expected
@@ -126,6 +130,8 @@ function assertEqual(value, expected) {
  *
  * This supports arrays and objects, and will perform deep, recursive equality
  * checks. Functions are compared using Object.is().
+ *
+ * @see {@link areEqual}
  *
  * @param {*} value
  * @param {*} expected
