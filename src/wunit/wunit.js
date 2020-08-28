@@ -154,25 +154,24 @@ function assertNotEqual(value, expected) {
 /**
  * Groups related assertions together.
  *
- * The callback provided must provide at least 1 assertion, otherwise it will
+ * The assertions provided must provide at least 1 assertion, otherwise it will
  * be treated as a failing test.
  *
  * @param {string} name
- * @param {Function} cb
+ * @param {Array} assertions
  * @returns {Object} Returns an object with the following keys:
  *   - {string} "name": the same as the name parameter
  *   - {Array} "failures": an array of error messages, if any
  *   - {number} "total": the total number of assertions run
  */
-function test(name, cb) {
-  const results = cb() || [];
+function test(name, assertions) {
   return {
     name,
     failures:
-      results.length === 0
+      assertions.length === 0
         ? ["Test did not contain any assertions."]
-        : results.filter((r) => !r.ok).map((r) => r.message),
-    total: results.length,
+        : assertions.filter((r) => !r.ok).map((r) => r.message),
+    total: assertions.length,
   };
 }
 
@@ -180,11 +179,11 @@ function test(name, cb) {
  * Starts a new test suite.
  *
  * @param {string} name
- * @param {Function} cb
+ * @param {Array} tests
  */
-function define(name, cb) {
-  const tests = cb() || [];
-  const hasFailures = tests.some((t) => t.failures.length > 0);
+function define(name, tests) {
+  const hasFailures =
+    tests.length === 0 || tests.some((t) => t.failures.length > 0);
 
   // Report.
   echo(`Start running suite: "${name}"`);
@@ -207,7 +206,11 @@ function define(name, cb) {
   });
 
   if (hasFailures) {
-    error(`✗ Suite "${name}" failed with failing tests.`);
+    if (tests.length === 0) {
+      error(`✗ Suite "${name}" failed because it contains no tests.`);
+    } else {
+      error(`✗ Suite "${name}" failed with failing tests.`);
+    }
     process.exitCode = 1;
   } else {
     success(`✓ Suite "${name}" passed!`);
