@@ -56,6 +56,7 @@ function areEqual(value, expected) {
     case "string":
     case "number":
     case "boolean":
+    case "undefined":
       return value === expected;
 
     case "function":

@@ -26,6 +26,42 @@ define("wunit spy utility", [
   ),
 
   test(
+    "it correctly spies on object getters/setters",
+    (function () {
+      const spyOnMe = {
+        _property: "initial value",
+        get property() {
+          return this._property;
+        },
+        set property(value) {
+          this._property = value;
+        },
+      };
+
+      const spy = spyOn(spyOnMe, "property");
+
+      const assertions = [
+        assertEqual(spyOnMe.property, "initial value"), // Can still call method normally.
+        assertEqual(spy.wasCalled(), true),
+        assertEqual(spy.lastCall(), { returnValue: "initial value", args: [] }),
+      ];
+
+      spyOnMe.property = "override value"; // Can still call method normally.
+
+      return [
+        ...assertions,
+        assertEqual(spy.wasCalled(), true),
+        assertEqual(spy.lastCall(), {
+          returnValue: undefined,
+          args: ["override value"],
+        }),
+        assertEqual(spyOnMe.property, "override value"), // Can still call method normally.
+        assertEqual(spy.calls().length, 3),
+      ];
+    })()
+  ),
+
+  test(
     "it can reset calls",
     (function () {
       const spyOnMe = {
