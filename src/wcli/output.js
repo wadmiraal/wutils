@@ -7,36 +7,52 @@
  * @module jsutils/wcli/output
  */
 
-/**
- * Prints the passed text and modifier to the console.
- *
- * For internal use only. Makes sure the modifiers are reset at the end of the
- * printed text.
- *
- * @param {string} modifier
- * @param {...string} text
- */
-function print(modifier, ...text) {
-  console.log(`${modifier}${text.join(" ")}\x1b[0m`);
-}
-
 module.exports = {
+  /**
+   * Prints the passed list of instructions to the console.
+   *
+   * @param {Array} instructions
+   */
+  print(instructions) {
+    console.log(
+      instructions.reduce((acc, { modifier = "", text }) => {
+        return acc + `${modifier}${text} \x1b[0m`;
+      }, "")
+    );
+  },
   echo(...text) {
-    print("", ...text);
+    return {
+      modifier: "\x1b[0m",
+      text: text.join(" "),
+    };
   },
   error(...text) {
-    print("\x1b[31m", ...text);
+    return {
+      modifier: "\x1b[31m",
+      text: text.join(" "),
+    };
   },
   info(...text) {
-    print("\x1b[34m", ...text);
+    return {
+      modifier: "\x1b[34m",
+      text: text.join(" "),
+    };
   },
   nl() {
-    console.log();
+    return {
+      text: "\n",
+    };
   },
   success(...text) {
-    print("\x1b[32m", ...text);
+    return {
+      modifier: "\x1b[32m",
+      text: text.join(" "),
+    };
   },
   warn(...text) {
-    print("\x1b[33m", ...text);
+    return {
+      modifier: "\x1b[33m",
+      text: text.join(" "),
+    };
   },
 };

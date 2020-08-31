@@ -17,9 +17,7 @@
  * @module jsutils/wunit/wunit
  */
 
-const { echo, success, error, nl } = require("../wcli/output");
-
-const INDENT = "  ";
+const { echo, error, nl, print, success } = require("../wcli/output");
 
 /**
  * Helper function for printing out results.
@@ -185,37 +183,51 @@ function define(name, tests) {
   const hasFailures =
     tests.length === 0 || tests.some((t) => t.failures.length > 0);
 
-  // Report.
-  echo(`Start running suite: "${name}"`);
+  // Prepare report.
+  const output = [echo(`Start running suite: "${name}"`), nl()];
+  const indent = "  ";
+
   tests.forEach((t) => {
-    echo(INDENT, `Test: "${t.name}"`);
+    output.push(echo(indent, `Test: "${t.name}"`), nl());
     if (t.failures.length) {
-      error(
-        INDENT,
-        `✗ Test "${t.name}" failed with ${t.failures.length} error(s):`
+      output.push(
+        error(
+          indent,
+          `✗ Test "${t.name}" failed with ${t.failures.length} error(s):`
+        ),
+        nl()
       );
       t.failures.forEach((failure) => {
-        error(INDENT, INDENT, `- ${failure}`);
+        output.push(error(indent, indent, `- ${failure}`), nl());
       });
     }
-    echo(
-      INDENT,
-      INDENT,
-      `${Math.max(0, t.total - t.failures.length)} out of ${t.total} passed`
+    output.push(
+      echo(
+        indent,
+        indent,
+        `${Math.max(0, t.total - t.failures.length)} out of ${t.total} passed`
+      ),
+      nl()
     );
   });
 
   if (hasFailures) {
     if (tests.length === 0) {
-      error(`✗ Suite "${name}" failed because it contains no tests.`);
+      output.push(
+        error(`✗ Suite "${name}" failed because it contains no tests.`),
+        nl()
+      );
     } else {
-      error(`✗ Suite "${name}" failed with failing tests.`);
+      output.push(error(`✗ Suite "${name}" failed with failing tests.`), nl());
     }
     process.exitCode = 1;
   } else {
-    success(`✓ Suite "${name}" passed!`);
+    output.push(success(`✓ Suite "${name}" passed!`), nl());
   }
-  nl();
+  output.push(nl());
+
+  // Print output.
+  print(output);
 }
 
 module.exports = {
