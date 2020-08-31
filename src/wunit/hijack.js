@@ -2,9 +2,9 @@
  * Simple hijacking utility.
  *
  * Simple utility to hijack object methods. By not bothering with error checking
- * (e.g.: does the object exist? Does the method exist? Is the method a real
- * method, or a getter/setter property?), nor with stacking or pattern matching,
- * we can keep this simple and small.
+ * (e.g.: Does the object exist? Does the method exist?), as well as only
+ * dealing with methods or getters (setters are not supported), nor with
+ * stacking or pattern matching, we can keep this simple and small.
  *
  * The function returns a hijack object, which can be used to restore the
  * original method implementation.
@@ -16,32 +16,51 @@
  */
 
 function hijack(obj, method, implem) {
-  const fakeMethod = (...args) => {
-    return implem.apply(obj, args);
-  };
-
   const {
     configurable,
     enumerable,
+    get,
     writable,
     value,
   } = Object.getOwnPropertyDescriptor(obj, method);
 
-  Object.defineProperty(obj, method, {
-    configurable,
-    enumerable,
-    writable: false,
-    value: fakeMethod,
-  });
+  const isGetter = get !== undefined;
+
+  if (isGetter) {
+    Object.defineProperty(obj, method, {
+      configurable,
+      enumerable,
+      get: () => {
+        return implem.apply(obj);
+      },
+    });
+  } else {
+    Object.defineProperty(obj, method, {
+      configurable,
+      enumerable,
+      writable: false,
+      value: (...args) => {
+        return implem.apply(obj, args);
+      },
+    });
+  }
 
   return {
     restore() {
-      Object.defineProperty(obj, method, {
-        configurable,
-        enumerable,
-        writable,
-        value,
-      });
+      if (isGetter) {
+        Object.defineProperty(obj, method, {
+          configurable,
+          enumerable,
+          get,
+        });
+      } else {
+        Object.defineProperty(obj, method, {
+          configurable,
+          enumerable,
+          writable,
+          value,
+        });
+      }
     },
   };
 }

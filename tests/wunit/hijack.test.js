@@ -29,6 +29,32 @@ define("wunit hijacking utility", [
   ),
 
   test(
+    "it correctly hijacks an object getter implementation",
+    (function () {
+      const hijackMe = {
+        _property: "initial value",
+        get property() {
+          return this._property;
+        },
+        set property(value) {
+          this._property = value;
+        },
+      };
+
+      const assertions = [assertEqual(hijackMe.property, "initial value")];
+
+      hijack(hijackMe, "property", function () {
+        return "OVERRIDE " + this._property; // Has access to object's "this".
+      });
+
+      return [
+        ...assertions,
+        assertEqual(hijackMe.property, "OVERRIDE initial value"),
+      ];
+    })()
+  ),
+
+  test(
     "it can restore the original method",
     (function () {
       const method = () => {};
