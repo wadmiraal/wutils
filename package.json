@@ -1,7 +1,7 @@
 {
-  "name": "jsutils",
+  "name": "wutils",
   "version": "1.0.0",
-  "description": "Some JS utilities, no dependencies",
+  "description": "Some JS utilities and experiments, no dependencies",
   "main": "index.js",
   "scripts": {
     "bench": "node tests/run-benchmark.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wadmiraal/jsutils.git"
+    "url": "git+https://github.com/wadmiraal/wutils.git"
   },
   "author": "Wouter Admiraal <wad@wadmiraal.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wadmiraal/jsutils/issues"
+    "url": "https://github.com/wadmiraal/wutils/issues"
   },
-  "homepage": "https://github.com/wadmiraal/jsutils#readme",
+  "homepage": "https://github.com/wadmiraal/wutils#readme",
   "devDependencies": {
     "benchmark": "^2.1.4",
     "eslint": "^7.7.0",
