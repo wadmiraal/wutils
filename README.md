@@ -1,4 +1,4 @@
-JS Utilities [![Build Status](https://travis-ci.org/wadmiraal/jsutils.svg?branch=master)](https://travis-ci.org/wadmiraal/jsutils) ![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wadmiraal_jsutils&metric=alert_status)](https://sonarcloud.io/dashboard?id=wadmiraal_jsutils)
+JS Utilities and Experiments [![Build Status](https://travis-ci.org/wadmiraal/jsutils.svg?branch=master)](https://travis-ci.org/wadmiraal/jsutils) ![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=wadmiraal_jsutils&metric=alert_status)](https://sonarcloud.io/dashboard?id=wadmiraal_jsutils)
 ============
 
 **Please don't use this.** This is just some experiments to build a custom utility library, without using any external libs. **Even I wouldn't use it in production.**
